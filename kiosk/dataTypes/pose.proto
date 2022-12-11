@@ -1,0 +1,72 @@
+syntax = "proto3";
+
+package pt.ulisboa.tecnico.surething.pose;
+
+option java_multiple_files = true;
+option java_package = "pt.ulisboa.tecnico.surething.pose";
+option java_outer_classname = "pose";
+
+message PoseEncrypt0{
+
+  bytes protected = 1; //empty_or_serialized_map of HeaderMap type - string of bytes
+
+  HeaderMap unprotected = 2; //header map unprotected
+
+  bytes ciphertext = 3; //ciphertext of payload - string of bytes
+
+}
+
+//headers parameters
+
+message Value{
+    //contains all header parameters except counter and signature
+    oneof Value {
+        int32 int = 1;   // an unsigned integer or negative integer
+        string tstr = 2; // utf-8 text string
+        uint32 uint = 3; // an unsigned integer
+        bytes bstr = 4; // byte string
+    }
+}
+
+message HeaderMap{
+    // map containing header parameters
+    // will be serialized and put inside PoseEncrypt0
+    map<int32, Value> map = 1;
+}
+
+message Enc_Structure{
+
+  string context = 1; // text string identifying the context of the authenticated data structure
+
+  PoseEncrypt0 body = 2; //data structure aka body
+
+  bytes protected = 3;  //protected fields of the body structure
+
+  //string external_aad = 4;
+
+}
+
+message Pose_Sign1{ //COSE_Sign1 - signature structure single signed
+
+  bytes protected = 1; //empty_or_serialized_map of HeaderMap type - string of bytes
+
+  HeaderMap unprotected = 2; //header map unprotected
+
+  Enc_Structure payload = 3; // instead of having plaintext payload, we have an encrypted structure
+
+  bytes signature = 4; // computed signature value of the payload
+
+}
+
+message Sig_Structure{ // Canonical form of a well-defined byte stream
+
+  string context = 1;
+
+  Pose_Sign1 body = 2;
+
+  bytes body_protected = 3; // protected fields of the body
+
+  //string external_aad = 4;
+
+}
+
